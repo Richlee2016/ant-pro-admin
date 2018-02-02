@@ -1,64 +1,32 @@
 import React, { PureComponent } from 'react';
 import { Link } from 'dva/router';
-import moment from 'moment';
 import { connect } from 'dva';
-import { List, Card, Row, Col, Radio, Input, Progress, Button, Icon, Dropdown, Menu, Avatar } from 'antd';
+import { List, Button, Icon, Card,Row,Col} from 'antd';
 
 import PageHeaderLayout from '../../../layouts/PageHeaderLayout';
-
+import Ellipsis from '../../../components/Ellipsis';
 import styles from './Index.less';
 
-const RadioButton = Radio.Button;
-const RadioGroup = Radio.Group;
-const { Search } = Input;
-
-@connect(({ list, loading }) => ({
-  list,
+@connect(({ movie, loading }) => ({
+  movie,
   loading: loading.models.list,
 }))
 export default class BasicList extends PureComponent {
   componentDidMount() {
     this.props.dispatch({
-      type: 'list/fetch',
-      payload: {
-        count: 5,
-      },
-    });
-  }
-
-  addHot = () =>{
-    console.log(5);
-    this.props.dispatch({
-      type: 'movie/hot/add',
-      payload: {
-        count: 5,
-      },
+      type: 'movie/fetchHotList'
     });
   }
 
   render() {
-    const { list: { list }, loading } = this.props;
-
+    const { movie: { hotList }, loading } = this.props;
+    const hotFilter = type => hotList.filter(o => o.hotType === type).length;
+    
     const Info = ({ title, value, bordered }) => (
       <div className={styles.headerInfo}>
         <span>{title}</span>
         <p>{value}</p>
         {bordered && <em />}
-      </div>
-    );
-
-    const extraContent = (
-      <div className={styles.extraContent}>
-        <RadioGroup defaultValue="all">
-          <RadioButton value="all">全部</RadioButton>
-          <RadioButton value="progress">进行中</RadioButton>
-          <RadioButton value="waiting">等待中</RadioButton>
-        </RadioGroup>
-        <Search
-          className={styles.extraContentSearch}
-          placeholder="请输入"
-          onSearch={() => ({})}
-        />
       </div>
     );
 
@@ -69,91 +37,82 @@ export default class BasicList extends PureComponent {
       total: 50,
     };
 
-    const ListContent = ({ data: { owner, createdAt, percent, status } }) => (
-      <div className={styles.listContent}>
-        <div className={styles.listContentItem}>
-          <span>Owner</span>
-          <p>{owner}</p>
-        </div>
-        <div className={styles.listContentItem}>
-          <span>开始时间</span>
-          <p>{moment(createdAt).format('YYYY-MM-DD HH:mm')}</p>
-        </div>
-        <div className={styles.listContentItem}>
-          <Progress percent={percent} status={status} strokeWidth={6} style={{ width: 180 }} />
+    const content = (
+      <div className={styles.pageHeaderContent}>
+        <p>
+          段落示意：蚂蚁金服务设计平台 ant.design，用最小的工作量，无缝接入蚂蚁金服生态，
+          提供跨越设计与开发的体验解决方案。
+        </p>
+        <div className={styles.contentLink}>
+          <a>
+            <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/MjEImQtenlyueSmVEfUD.svg" /> 快速开始
+          </a>
+          <a>
+            <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/NbuDUAuBlIApFuDvWiND.svg" /> 产品简介
+          </a>
+          <a>
+            <img alt="" src="https://gw.alipayobjects.com/zos/rmsportal/ohOEPSYdDTNnyMbGuyLb.svg" /> 产品文档
+          </a>
         </div>
       </div>
     );
 
-    const menu = (
-      <Menu>
-        <Menu.Item>
-          <a>编辑</a>
-        </Menu.Item>
-        <Menu.Item>
-          <a>删除</a>
-        </Menu.Item>
-      </Menu>
-    );
-
-    const MoreBtn = () => (
-      <Dropdown overlay={menu}>
-        <a>
-          更多 <Icon type="down" />
-        </a>
-      </Dropdown>
+    const extraContent = (
+      <div className={styles.extraImg}>
+        <img alt="这是一个标题" src="https://gw.alipayobjects.com/zos/rmsportal/RzwpdLnhmvDJToTdfDPe.png" />
+      </div>
     );
 
     return (
-      <PageHeaderLayout>
+      <PageHeaderLayout
+      title="卡片列表"
+      content={content}
+      extraContent={extraContent}
+      >
         <div className={styles.standardList}>
           <Card bordered={false}>
             <Row>
               <Col sm={8} xs={24}>
-                <Info title="我的待办" value="8个任务" bordered />
+                <Info title="热门推荐" value={hotFilter(1)} bordered />
               </Col>
               <Col sm={8} xs={24}>
-                <Info title="本周任务平均处理时间" value="32分钟" bordered />
+                <Info title="即将上映" value={hotFilter(2)} bordered />
               </Col>
               <Col sm={8} xs={24}>
-                <Info title="本周完成任务数" value="24个任务" />
+                <Info title="经典电影" value={hotFilter(3)} />
               </Col>
             </Row>
           </Card>
-
-          <Card
-            className={styles.listCard}
-            bordered={false}
-            title="标准列表"
-            style={{ marginTop: 24 }}
-            bodyStyle={{ padding: '0 32px 40px 32px' }}
-            extra={extraContent}
-          >
-            <Link to="/movie/hot-add">
-              <Button type="dashed" onClick={this.addHot} style={{ width: '100%', marginBottom: 8 }} icon="plus">
-                添加
-              </Button>
-            </Link>  
-            <List
-              size="large"
-              rowKey="id"
-              loading={loading}
-              pagination={paginationProps}
-              dataSource={list}
-              renderItem={item => (
-                <List.Item
-                  actions={[<a>编辑</a>, <MoreBtn />]}
-                >
-                  <List.Item.Meta
-                    avatar={<Avatar src={item.logo} shape="square" size="large" />}
-                    title={<a href={item.href}>{item.title}</a>}
-                    description={item.subDescription}
+        </div>
+        <div className={styles.cardList}>
+          <List
+            rowKey="id"
+            loading={loading}
+            grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
+            dataSource={['', ...hotList]}
+            renderItem={item => (item ? (
+              <List.Item key={item.id}>
+                <Card hoverable className={styles.card} actions={[<a>编辑</a>, <a>删除</a>]}>
+                  <Card.Meta
+                    avatar={<img alt="" className={styles.cardAvatar} src={item.movieHome?item.movieHome.img:""} />}
+                    title={<a href="#">{item.name}</a>}
+                    description={(
+                      <Ellipsis className={styles.item} lines={3}>{item.name}</Ellipsis>
+                    )}
                   />
-                  <ListContent data={item} />
+                </Card>
+              </List.Item>
+              ) : (
+                <List.Item>
+                  <Link to="/movie/hot-add">
+                  <Button type="dashed" className={styles.newButton}>
+                    <Icon type="plus" /> 新增产品
+                  </Button>
+                  </Link>
                 </List.Item>
-              )}
-            />
-          </Card>
+              )
+            )}
+          />
         </div>
       </PageHeaderLayout>
     );

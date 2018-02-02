@@ -7,34 +7,48 @@ import PageHeaderLayout from '../../../layouts/PageHeaderLayout';
 import styles from './Add.less';
 
 const FormItem = Form.Item;
+const Search = Input.Search;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 
-@connect(({ loading }) => ({
-  submitting: loading.effects['form/submitRegularForm'],
+@connect(({ movie,loading }) => ({
+  submitting: loading.effects['movie/addHotMovie'],
+  searchHot:movie.searchHot
 }))
 @Form.create()
+
 export default class BasicForms extends PureComponent {
   constructor(props){
     super(props);
   }
+
+  getHotName= name => {
+    if(!name) return;
+    this.props.dispatch({
+      type: 'movie/fetchMovies',
+      payload: {name}
+    });
+  }
+
   handleSubmit = (e) => {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         this.props.dispatch({
-          type: 'form/submitRegularForm',
+          type: 'movie/updateHotMovie',
           payload: values,
         });
       }
     });
   }
   render() {
-    const {routerData} = this.props;
-    const { submitting } = this.props;
-    const { getFieldDecorator, getFieldValue } = this.props.form;
-
+    const { submitting,searchHot } = this.props;
+    const { getFieldDecorator} = this.props.form;
+    const homeRedio = searchHot.map((o,i) => {
+      console.log(o.id);
+      return <Radio key={o.id} value={o.id}><img className={styles.hotImg} src={o.img} /></Radio>
+    })
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
@@ -64,119 +78,75 @@ export default class BasicForms extends PureComponent {
           >
             <FormItem
               {...formItemLayout}
-              label="标题"
+              label="电影名称"
             >
-              {getFieldDecorator('title', {
+              {getFieldDecorator('name', {
                 rules: [{
-                  required: true, message: '请输入标题',
+                  required: true, message: '请输入电影名',
                 }],
               })(
-                <Input placeholder="给目标起个名字" />
+                <div className={styles.movieName}>
+                  <Search
+                    placeholder="请输入电影名"
+                    onSearch={value => {this.getHotName(value)}}
+                    enterButton
+                  />
+                </div>
               )}
             </FormItem>
             <FormItem
               {...formItemLayout}
-              label="起止日期"
+              label="电影家园"
             >
-              {getFieldDecorator('date', {
+            {getFieldDecorator('movieHome', {
+              rules: [{
+                required: false, message: '请搜索id',
+              }],
+            })(
+              <Radio.Group>
+              {homeRedio}
+              </Radio.Group>
+            )}
+            </FormItem>
+            <FormItem                                                                                                             
+              {...formItemLayout}
+              label="在线电影"
+            >
+              {getFieldDecorator('onlineSrc', {
                 rules: [{
-                  required: true, message: '请选择起止日期',
+                  required: true, message: '请搜索id',
                 }],
               })(
-                <RangePicker style={{ width: '100%' }} placeholder={['开始日期', '结束日期']} />
+                <Input placeholder="请搜索id" />
               )}
             </FormItem>
             <FormItem
               {...formItemLayout}
-              label="目标描述"
+              label="热门类型"
             >
-              {getFieldDecorator('goal', {
+              {getFieldDecorator('hotType', {
                 rules: [{
-                  required: true, message: '请输入目标描述',
+                  required: true, message: '请选择类型',
                 }],
               })(
-                <TextArea style={{ minHeight: 32 }} placeholder="请输入你的阶段性工作目标" rows={4} />
+                <Radio.Group>
+                  <Radio value="1">热门推荐</Radio>
+                  <Radio value="2">即将上映</Radio>
+                  <Radio value="3">经典影片</Radio>
+                </Radio.Group>
               )}
             </FormItem>
             <FormItem
               {...formItemLayout}
-              label="衡量标准"
+              label="视频地址"
             >
-              {getFieldDecorator('standard', {
+              {getFieldDecorator('videoUrl', {
                 rules: [{
-                  required: true, message: '请输入衡量标准',
+                  required: true, message: '请输入视频地址',
                 }],
               })(
-                <TextArea style={{ minHeight: 32 }} placeholder="请输入衡量标准" rows={4} />
+                <TextArea style={{ minHeight: 32 }} placeholder="请输入视频地址" rows={4} />
               )}
-            </FormItem>
-            <FormItem
-              {...formItemLayout}
-              label={
-                <span>
-                  客户
-                  <em className={styles.optional}>
-                    （选填）
-                    <Tooltip title="目标的服务对象">
-                      <Icon type="info-circle-o" style={{ marginRight: 4 }} />
-                    </Tooltip>
-                  </em>
-                </span>
-              }
-            >
-              {getFieldDecorator('client')(
-                <Input placeholder="请描述你服务的客户，内部客户直接 @姓名／工号" />
-              )}
-            </FormItem>
-            <FormItem
-              {...formItemLayout}
-              label={<span>邀评人<em className={styles.optional}>（选填）</em></span>}
-            >
-              {getFieldDecorator('invites')(
-                <Input placeholder="请直接 @姓名／工号，最多可邀请 5 人" />
-              )}
-            </FormItem>
-            <FormItem
-              {...formItemLayout}
-              label={<span>权重<em className={styles.optional}>（选填）</em></span>}
-            >
-              {getFieldDecorator('weight')(
-                <InputNumber placeholder="请输入" min={0} max={100} />
-              )}
-              <span>%</span>
-            </FormItem>
-            <FormItem
-              {...formItemLayout}
-              label="目标公开"
-              help="客户、邀评人默认被分享"
-            >
-              <div>
-                {getFieldDecorator('public', {
-                  initialValue: '1',
-                })(
-                  <Radio.Group>
-                    <Radio value="1">公开</Radio>
-                    <Radio value="2">部分公开</Radio>
-                    <Radio value="3">不公开</Radio>
-                  </Radio.Group>
-                )}
-                <FormItem style={{ marginBottom: 0 }}>
-                  {getFieldDecorator('publicUsers')(
-                    <Select
-                      mode="multiple"
-                      placeholder="公开给"
-                      style={{
-                        margin: '8px 0',
-                        display: getFieldValue('public') === '2' ? 'block' : 'none',
-                      }}
-                    >
-                      <Option value="1">同事甲</Option>
-                      <Option value="2">同事乙</Option>
-                      <Option value="3">同事丙</Option>
-                    </Select>
-                  )}
-                </FormItem>
-              </div>
             </FormItem>
             <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
               <Button type="primary" htmlType="submit" loading={submitting}>

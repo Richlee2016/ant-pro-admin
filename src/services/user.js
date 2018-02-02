@@ -5,5 +5,7 @@ export async function query() {
 }
 
 export async function queryCurrent() {
-  return request('/api/currentUser');
+  return request('/api/session/Session',{
+    querys:{openid:'E71A6C17E7FAE3981C4F63CBE98A5F43'}
+  });
 }

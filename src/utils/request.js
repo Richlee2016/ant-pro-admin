@@ -1,3 +1,6 @@
+
+
+import qs from "querystring"
 import fetch from 'dva/fetch';
 import { notification } from 'antd';
 import { routerRedux } from 'dva/router';
@@ -42,7 +45,7 @@ function checkStatus(response) {
  * @param  {object} [options] The options we want to pass to "fetch"
  * @return {object}           An object containing either "data" or "err"
  */
-export default function request(url, options) {
+export default function request(url, options={}) {
   const defaultOptions = {
     credentials: 'include',
   };
@@ -55,7 +58,10 @@ export default function request(url, options) {
     };
     newOptions.body = JSON.stringify(newOptions.body);
   }
-
+  if (newOptions.method === 'GET' || "undefined" && Object.keys(options.querys?options.querys:{}).length>0) {
+    url = `${url}?${qs.stringify(options.querys)}`;
+  }
+  console.log(url,newOptions);
   return fetch(url, newOptions)
     .then(checkStatus)
     .then((response) => {

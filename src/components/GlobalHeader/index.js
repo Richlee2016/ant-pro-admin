@@ -98,7 +98,7 @@ export default class GlobalHeader extends PureComponent {
           />
           <NoticeIcon
             className={styles.action}
-            count={currentUser.notifyCount}
+            count={12}
             onItemClick={(item, tabProps) => {
               console.log(item, tabProps); // eslint-disable-line
             }}
@@ -126,11 +126,11 @@ export default class GlobalHeader extends PureComponent {
               emptyImage="https://gw.alipayobjects.com/zos/rmsportal/HsIsxMZiWKrNUavQUXqx.svg"
             />
           </NoticeIcon>
-          {currentUser.name ? (
+          {Object.keys(currentUser).length > 0 ? (
             <Dropdown overlay={menu}>
               <span className={`${styles.action} ${styles.account}`}>
-                <Avatar size="small" className={styles.avatar} src={currentUser.avatar} />
-                <span className={styles.name}>{currentUser.name}</span>
+                <Avatar size="small" className={styles.avatar} src={currentUser.qqInfo.figureurl} />
+                <span className={styles.name}>{currentUser.qqInfo.nickname}</span>
               </span>
             </Dropdown>
           ) : <Spin size="small" style={{ marginLeft: 8 }} />}

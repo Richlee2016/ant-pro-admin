@@ -77,3 +77,24 @@ export async function fakeRegister(params) {
 export async function queryNotices() {
   return request('/api/notices');
 }
+
+
+// 搜索电影
+export async function queryMovies(querys){
+  return request('/api/movies/Movies',{
+    querys
+  });
+}
+
+// 热门电影获取
+export async function queryHotMovie(){
+  return request('/api/movies/HotMovies');
+}
+// 添加热门电影
+export async function addHotMovie(params){
+  return request('/api/movies/UpdateHotMovie',{
+    method:'POST',
+    body:params
+  });
+}
+
